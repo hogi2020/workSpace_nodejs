@@ -1,0 +1,77 @@
+<div class="row my-5">
+    <div class="col">
+        <h1 class="text-center mb-5">글쓰기</h1>
+        <form name="frm" method="post">
+            <input class="form-control my-2" name="title" placeholder="제목을 입력하세요.">
+            <textarea class="form-control" name="body" rows="10" placeholder="내용을 입력하세요."></textarea>
+            <div class="text-center my-2">
+                <button class="btn btn-primary">글등록</button>
+                <button class="btn btn-secondary" type="reset">등록취소</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 날짜 포맷 지정 함수 -->
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+
+<script type="module">
+    /* 
+        모듈은 ES6에서 지원하기 시작한 모듈의 개념이다.
+        자바스크립트를 가지고 모듈화 시켜서 재사용이 가능한 코드를 전개할 수 있다.
+        백엔드 쪽 코드 입니다.
+        
+        <script type="text/javascript">오리지널 - commonjs - 기존 프론트 쪽 코드
+        한계 : 다른 서버(클라우드 서비스)와 연계가 어렵다.
+
+        Module일 때, Import/Export를 사용할 수 있습니다.
+        그래서 javascripts/firebase.js 작성한 뒤에 맨 끝에 export를 추가하였습니다.
+        사용자가 정의한 XXX.js를 외부에서 사용할 수 있게 되었습니다.
+    */
+    import {app} from "/javascripts/firebase.js"
+    import {getFirestore, addDoc, collection} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js"
+    
+    console.log(app)
+
+    const db = getFirestore(app)
+    console.log(db)
+    
+    // 브라우저 로컬 저장소에 있는 값을 읽어오기
+    const email = localStorage.getItem("email")
+    console.log(email)
+
+    // 저장버튼을 누르면 사용자가 입력한 제목, 내용이 서버에 전송되어야 함.
+    // Cloud Firestore가 전송된 제목과 내용을 가지고 저장하기
+    // 커넥션 연결 -> 물리적인 데이터베이스 이름 (collection-파라미터로 커넥션 정보를 넘기고 커넥션 생성해줌)
+    // 두번째 파라미터에 컬렉션 네임을 설정하기(posts)
+    // 데이터를 추가하는 함수는 addDoc
+    // addDoc의 첫번째 파라미터는 collection이다. 두번째 파라미터는 사용자가 입력한 값을 전달함.
+    // 이 때, 사용자가 입력한 값이 여러개이므로 object({}) 사용한다.
+    $(frm).on("submit", async(event) => {
+        event.preventDefault()  // 새로고침이 안일어남
+        let title = $(frm.title).val()
+        let body = $(frm.body).val()
+
+        // 제목이나, 내용을 입력 안했을 때, modal 창이 열림
+        if(title == "" || body == "") {
+            $("#modal-alert.modal-body").html("제목 또는 내용을 입력하세요")
+            $("#modal-alert").modal("show")
+        } else {
+            let date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+            await addDoc(collection(db, "posts"), {email:email, title:title, body:body, date:date})
+            // 위에서 글쓰기가 성공되었다면 목록 페이지를 보여줘 -> routes -> index.js 열어봐
+            location.href = "/posts"    // (routes>index.js>pageName:posts/list.ejs)
+        }
+    })
+</script>
+
+<!-- 
+1. 제목과 내용을 입력한 후 글등록을 누르면 로그인시 localStorage에 저장된 email과 uid 중
+이메일 주소를 작성자 컬럼에 추가한다.
+2. 로그인을 한 뒤에야 글쓰기를 할 수 있다.
+-->
+
+<!-- 
+브라우저에서 동작(Web) => URL
+CRUD 
+-->

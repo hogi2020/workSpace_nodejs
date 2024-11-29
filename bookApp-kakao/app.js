@@ -4,7 +4,10 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+// 위에서 생성한 라우터 설정 실행하는 코드
 var indexRouter = require('./routes/index');
+
+// 대시보드, 마이페이지 장바구니 권한을 가지고 진행되는 메뉴는 아래 라우터 확인
 var usersRouter = require('./routes/users');
 
 var app = express();
